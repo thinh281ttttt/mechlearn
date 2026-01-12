@@ -41,6 +41,7 @@
             <div class="flex space-x-8">
                 <button onclick="switchTab('courses')" class="tab-btn py-4 px-2 border-b-2 border-blue-600 text-blue-600 font-medium text-sm" data-tab="courses">Khóa học</button>
                 <button onclick="switchTab('my-learning')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 font-medium text-sm" data-tab="my-learning">Học của tôi</button>
+                <button onclick="switchTab('commands')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 font-medium text-sm" data-tab="commands">Thư viện Lệnh</button>
             </div>
         </div>
     </nav>
@@ -56,7 +57,96 @@
             <p class="text-gray-600 mb-8">Tiếp tục học tập và hoàn thành các khóa học đã đăng ký</p>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="enrolled-grid"></div>
         </div>
+        <!-- Tab Thư viện Lệnh -->
+        <div id="commands-content" style="display:none;">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">📚 Thư viện Lệnh CAD</h2>
+                <p class="text-gray-600">Tra cứu nhanh các lệnh AutoCAD & SolidWorks</p>
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="md:col-span-2">
+                        <input 
+                            type="text" 
+                            id="cmd-search" 
+                            placeholder="🔍 Tìm kiếm lệnh, phím tắt hoặc mô tả..."
+                            oninput="filterCommands()"
+                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                    </div>
+                    <div>
+                        <select id="cmd-software" onchange="filterCommands()" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="all">Tất cả phần mềm</option>
+                            <option value="autocad">AutoCAD</option>
+                            <option value="solidworks">SolidWorks</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterByCategory('all')" class="cmd-category-btn active px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white" data-category="all">Tất cả</button>
+                    <button onclick="filterByCategory('draw')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="draw">Vẽ</button>
+                    <button onclick="filterByCategory('modify')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="modify">Chỉnh sửa</button>
+                    <button onclick="filterByCategory('view')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="view">Hiển thị</button>
+                    <button onclick="filterByCategory('dimension')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="dimension">Kích thước</button>
+                    <button onclick="filterByCategory('feature')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="feature">Feature</button>
+                    <button onclick="filterByCategory('assembly')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="assembly">Assembly</button>
+                    <button onclick="filterByCategory('other')" class="cmd-category-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="other">Khác</button>
+                </div>
+            </div>
+
+            <!-- Commands Grid -->
+            <div id="commands-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+            <!-- Empty State -->
+            <div id="no-results" class="hidden text-center py-12">
+                <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <p class="text-gray-500 text-lg">Không tìm thấy lệnh phù hợp</p>
+            </div>
+        </div>
     </main>
+    <!-- Command Detail Modal -->
+    <div id="command-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
+                <div class="flex items-center space-x-3">
+                    <div id="cmd-detail-icon" class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"></div>
+                    <div>
+                        <h3 id="cmd-detail-name" class="text-2xl font-bold"></h3>
+                        <span id="cmd-detail-software" class="text-sm"></span>
+                    </div>
+                </div>
+                <button onclick="closeCommandModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">📝 Mô tả</h4>
+                        <p id="cmd-detail-desc" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">⌨️ Phím tắt</h4>
+                        <div id="cmd-detail-shortcut" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">🎯 Cách sử dụng</h4>
+                        <div id="cmd-detail-usage" class="bg-gray-50 rounded-lg p-4"></div>
+                    </div>
+                    <div id="cmd-detail-tips-section" class="hidden">
+                        <h4 class="font-semibold text-gray-700 mb-2">💡 Mẹo hay</h4>
+                        <ul id="cmd-detail-tips" class="list-disc list-inside space-y-1 text-gray-600"></ul>
+                    </div>
+                    <div id="cmd-detail-related-section" class="hidden">
+                        <h4 class="font-semibold text-gray-700 mb-2">🔗 Lệnh liên quan</h4>
+                        <div id="cmd-detail-related" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Q&A Modal -->
     <div id="qa-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
@@ -260,6 +350,1011 @@
     </div>
 
     <script>
+        // Dữ liệu lệnh
+const commandsData = [
+    // ===== AUTOCAD - LỆNH VẼ =====
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'LINE',
+        shortcut: ['L'],
+        icon: '📏',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Vẽ đường thẳng nối giữa các điểm',
+        usage: 'L → Enter → Click điểm đầu → Click điểm cuối → Enter',
+        tips: [
+            'Nhấn F8 để bật/tắt chế độ Ortho (vẽ vuông góc)',
+            'Dùng @ để vẽ theo tọa độ tương đối: @100,0 (100mm theo X)',
+            'Nhấn Space hoặc Enter để kết thúc lệnh'
+        ],
+        related: ['PLINE', 'XLINE', 'RAY']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'CIRCLE',
+        shortcut: ['C'],
+        icon: '⭕',
+        color: 'from-green-500 to-green-600',
+        description: 'Vẽ hình tròn theo tâm và bán kính',
+        usage: 'C → Enter → Click điểm tâm → Nhập bán kính → Enter',
+        tips: [
+            'Dùng D (Diameter) để vẽ theo đường kính thay vì bán kính',
+            'Dùng 3P để vẽ tròn qua 3 điểm',
+            'Dùng 2P để vẽ tròn qua 2 điểm đường kính'
+        ],
+        related: ['ARC', 'ELLIPSE', 'DONUT']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'RECTANGLE',
+        shortcut: ['REC', 'RECTANG'],
+        icon: '▭',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Vẽ hình chữ nhật',
+        usage: 'REC → Enter → Click góc thứ nhất → Click góc đối diện',
+        tips: [
+            'Dùng @100,50 để vẽ hình chữ nhật 100x50',
+            'Dùng F (Fillet) trước khi vẽ để bo góc',
+            'Dùng C (Chamfer) để vát góc'
+        ],
+        related: ['POLYGON', 'PLINE', 'LINE']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'ARC',
+        shortcut: ['A'],
+        icon: '⌒',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Vẽ cung tròn',
+        usage: 'A → Enter → Chọn điểm đầu → Điểm giữa → Điểm cuối',
+        tips: [
+            'Có nhiều cách vẽ: 3 điểm, Start-Center-End, Start-Center-Angle',
+            'Nhấn Ctrl để chuyển đổi giữa các phương pháp',
+            'Kết hợp với OSNAP để vẽ chính xác'
+        ],
+        related: ['CIRCLE', 'SPLINE', 'PLINE']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'POLYLINE',
+        shortcut: ['PL', 'PLINE'],
+        icon: '〰️',
+        color: 'from-teal-500 to-teal-600',
+        description: 'Vẽ đường polyline liên tục (có thể có độ dày)',
+        usage: 'PL → Enter → Click các điểm → Enter để kết thúc',
+        tips: [
+            'Dùng W (Width) để đặt độ dày đường',
+            'Dùng A (Arc) để chuyển sang chế độ vẽ cung',
+            'Dùng L (Line) để quay lại chế độ vẽ thẳng',
+            'Polyline là 1 đối tượng duy nhất, dễ edit hơn nhiều Line'
+        ],
+        related: ['LINE', 'SPLINE', 'PEDIT']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'POLYGON',
+        shortcut: ['POL'],
+        icon: '⬡',
+        color: 'from-indigo-500 to-indigo-600',
+        description: 'Vẽ đa giác đều',
+        usage: 'POL → Nhập số cạnh → Click tâm → I (Inscribed) hoặc C (Circumscribed) → Nhập bán kính',
+        tips: [
+            'I (Inscribed): Đa giác nội tiếp đường tròn',
+            'C (Circumscribed): Đa giác ngoại tiếp đường tròn',
+            'E (Edge): Vẽ theo độ dài cạnh'
+        ],
+        related: ['RECTANGLE', 'CIRCLE', 'PLINE']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'ELLIPSE',
+        shortcut: ['EL'],
+        icon: '⬮',
+        color: 'from-pink-500 to-pink-600',
+        description: 'Vẽ hình elip',
+        usage: 'EL → Click điểm đầu trục → Click điểm cuối trục → Nhập bán kính trục phụ',
+        tips: [
+            'Dùng C (Center) để vẽ từ tâm',
+            'Dùng A (Arc) để vẽ cung elip',
+            'Giữ Shift để vẽ elip đồng tâm'
+        ],
+        related: ['CIRCLE', 'ARC', 'SPLINE']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'HATCH',
+        shortcut: ['H', 'BH'],
+        icon: '▦',
+        color: 'from-cyan-500 to-cyan-600',
+        description: 'Tô gạch chéo/mẫu cho vùng kín',
+        usage: 'H → Chọn pattern → Click vào vùng cần tô → Enter',
+        tips: [
+            'Click "Pick Points" để tự động nhận diện vùng kín',
+            'Dùng Scale để điều chỉnh kích thước pattern',
+            'Dùng Angle để xoay pattern',
+            'Double click vào hatch để edit sau'
+        ],
+        related: ['BOUNDARY', 'GRADIENT', 'REGION']
+    },
+    {
+        software: 'autocad',
+        category: 'draw',
+        name: 'SPLINE',
+        shortcut: ['SPL'],
+        icon: '〜',
+        color: 'from-red-500 to-red-600',
+        description: 'Vẽ đường cong spline mượt',
+        usage: 'SPL → Click các điểm điều khiển → Enter',
+        tips: [
+            'Dùng F (Fit) để vẽ qua các điểm',
+            'Dùng CV (Control Vertices) để vẽ theo điểm điều khiển',
+            'Dùng SPLINEDIT để chỉnh sửa sau'
+        ],
+        related: ['PLINE', 'ARC', 'PEDIT']
+    },
+
+    // ===== AUTOCAD - LỆNH CHỈNH SỬA =====
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'MOVE',
+        shortcut: ['M'],
+        icon: '➜',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Di chuyển đối tượng',
+        usage: 'M → Chọn đối tượng → Enter → Click điểm gốc → Click điểm đích',
+        tips: [
+            'Dùng @ để di chuyển theo tọa độ tương đối',
+            'Bật Ortho (F8) để di chuyển theo hướng cố định',
+            'Giữ Shift để copy thay vì move'
+        ],
+        related: ['COPY', 'ROTATE', 'SCALE']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'COPY',
+        shortcut: ['CO', 'CP'],
+        icon: '📋',
+        color: 'from-green-500 to-green-600',
+        description: 'Sao chép đối tượng',
+        usage: 'CO → Chọn đối tượng → Enter → Click điểm gốc → Click điểm đích',
+        tips: [
+            'Có thể copy nhiều lần liên tiếp',
+            'Dùng M (Multiple) để copy nhiều bản',
+            'Kết hợp với Array để copy theo mảng'
+        ],
+        related: ['MOVE', 'ARRAY', 'MIRROR']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'ROTATE',
+        shortcut: ['RO'],
+        icon: '🔄',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Xoay đối tượng',
+        usage: 'RO → Chọn đối tượng → Enter → Click điểm xoay → Nhập góc',
+        tips: [
+            'Góc dương: xoay ngược chiều kim đồng hồ',
+            'Dùng C (Copy) để xoay kèm copy',
+            'Dùng R (Reference) để xoay theo góc tham chiếu'
+        ],
+        related: ['MOVE', 'SCALE', 'ALIGN']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'SCALE',
+        shortcut: ['SC'],
+        icon: '⤢',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Thay đổi tỷ lệ đối tượng',
+        usage: 'SC → Chọn đối tượng → Enter → Click điểm gốc → Nhập tỷ lệ',
+        tips: [
+            'Tỷ lệ 2 = phóng to 2 lần',
+            'Tỷ lệ 0.5 = thu nhỏ 1/2',
+            'Dùng R (Reference) để scale theo kích thước cụ thể'
+        ],
+        related: ['ROTATE', 'STRETCH', 'LENGTHEN']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'MIRROR',
+        shortcut: ['MI'],
+        icon: '🪞',
+        color: 'from-teal-500 to-teal-600',
+        description: 'Đối xứng đối tượng qua trục',
+        usage: 'MI → Chọn đối tượng → Enter → Click 2 điểm trục đối xứng → Y/N xóa bản gốc',
+        tips: [
+            'Nhập N (No) để giữ lại bản gốc',
+            'Nhập Y (Yes) để xóa bản gốc',
+            'Dùng kết hợp với Ortho để mirror theo trục ngang/dọc'
+        ],
+        related: ['COPY', 'ARRAY', 'ROTATE']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'OFFSET',
+        shortcut: ['O'],
+        icon: '⫸',
+        color: 'from-indigo-500 to-indigo-600',
+        description: 'Tạo đường song song',
+        usage: 'O → Nhập khoảng cách → Chọn đối tượng → Click phía cần offset',
+        tips: [
+            'Dùng cho line, polyline, circle, arc',
+            'Offset circle tạo vòng tròn đồng tâm',
+            'Nhấn Enter sau mỗi lần để offset nhiều đường'
+        ],
+        related: ['COPY', 'ARRAY', 'TRIM']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'TRIM',
+        shortcut: ['TR'],
+        icon: '✂️',
+        color: 'from-pink-500 to-pink-600',
+        description: 'Cắt bỏ phần thừa của đối tượng',
+        usage: 'TR → Chọn đường cắt → Enter → Click phần cần cắt',
+        tips: [
+            'Nhấn Enter 2 lần để chọn tất cả làm đường cắt',
+            'Giữ Shift để chuyển sang Extend',
+            'Click nhiều lần để cắt liên tiếp'
+        ],
+        related: ['EXTEND', 'BREAK', 'FILLET']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'EXTEND',
+        shortcut: ['EX'],
+        icon: '⟿',
+        color: 'from-cyan-500 to-cyan-600',
+        description: 'Kéo dài đối tượng đến biên',
+        usage: 'EX → Chọn đường biên → Enter → Click đối tượng cần kéo dài',
+        tips: [
+            'Nhấn Enter 2 lần để chọn tất cả làm đường biên',
+            'Giữ Shift để chuyển sang Trim',
+            'Kết hợp với Trim để chỉnh sửa nhanh'
+        ],
+        related: ['TRIM', 'LENGTHEN', 'STRETCH']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'FILLET',
+        shortcut: ['F'],
+        icon: '╰',
+        color: 'from-red-500 to-red-600',
+        description: 'Bo tròn góc giữa 2 đường',
+        usage: 'F → R (Radius) → Nhập bán kính → Chọn 2 đường cần bo',
+        tips: [
+            'Radius = 0 để nối 2 đường thành góc vuông',
+            'Dùng P (Polyline) để bo tất cả góc của polyline',
+            'Dùng T (Trim) để chọn có cắt đường gốc hay không'
+        ],
+        related: ['CHAMFER', 'BLEND', 'TRIM']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'CHAMFER',
+        shortcut: ['CHA'],
+        icon: '╲',
+        color: 'from-yellow-500 to-yellow-600',
+        description: 'Vát góc giữa 2 đường',
+        usage: 'CHA → D (Distance) → Nhập khoảng cách 1 → Khoảng cách 2 → Chọn 2 đường',
+        tips: [
+            'A (Angle) để vát theo góc',
+            'P (Polyline) để vát tất cả góc',
+            'Distance = 0 tương tự Fillet radius 0'
+        ],
+        related: ['FILLET', 'TRIM', 'EXTEND']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'ARRAY',
+        shortcut: ['AR'],
+        icon: '▦',
+        color: 'from-lime-500 to-lime-600',
+        description: 'Sao chép đối tượng theo mảng',
+        usage: 'AR → Chọn Rectangular/Polar/Path → Chọn đối tượng → Thiết lập thông số',
+        tips: [
+            'Rectangular: Mảng hình chữ nhật (hàng x cột)',
+            'Polar: Mảng hình tròn quanh tâm',
+            'Path: Mảng dọc theo đường path'
+        ],
+        related: ['COPY', 'MIRROR', 'ROTATE']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'STRETCH',
+        shortcut: ['S'],
+        icon: '↔️',
+        color: 'from-amber-500 to-amber-600',
+        description: 'Kéo giãn đối tượng',
+        usage: 'S → Chọn đối tượng bằng Crossing → Enter → Click điểm gốc → Click điểm đích',
+        tips: [
+            'Phải chọn bằng Crossing Window (phải sang trái)',
+            'Chỉ các điểm trong window mới bị kéo giãn',
+            'Hữu ích khi điều chỉnh kích thước bản vẽ'
+        ],
+        related: ['SCALE', 'LENGTHEN', 'MOVE']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'EXPLODE',
+        shortcut: ['X'],
+        icon: '💥',
+        color: 'from-rose-500 to-rose-600',
+        description: 'Phá vỡ đối tượng phức hợp thành các phần tử đơn',
+        usage: 'X → Chọn đối tượng → Enter',
+        tips: [
+            'Dùng để tách Block, Polyline, Hatch thành các line đơn',
+            'Sau khi explode không thể undo về dạng ban đầu',
+            'Polyline sau khi explode mất thuộc tính độ dày'
+        ],
+        related: ['BLOCK', 'PEDIT', 'JOIN']
+    },
+    {
+        software: 'autocad',
+        category: 'modify',
+        name: 'JOIN',
+        shortcut: ['J'],
+        icon: '⛓️',
+        color: 'from-emerald-500 to-emerald-600',
+        description: 'Nối các đường thành một đối tượng duy nhất',
+        usage: 'J → Chọn đường nguồn → Chọn các đường cần nối → Enter',
+        tips: [
+            'Các đường phải tiếp xúc hoặc gần nhau',
+            'Có thể nối line thành polyline',
+            'Ngược lại với Explode'
+        ],
+        related: ['PEDIT', 'EXPLODE', 'POLYLINE']
+    },
+
+    // ===== AUTOCAD - HIỂN THỊ & VIEW =====
+    {
+        software: 'autocad',
+        category: 'view',
+        name: 'ZOOM',
+        shortcut: ['Z'],
+        icon: '🔍',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Phóng to/thu nhỏ view',
+        usage: 'Z → Enter → Chọn option (E/W/A/P...)',
+        tips: [
+            'E (Extents): Zoom toàn bộ đối tượng',
+            'W (Window): Zoom vào vùng chọn',
+            'A (All): Zoom toàn bộ không gian vẽ',
+            'P (Previous): Quay về view trước',
+            'Cuộn chuột để zoom nhanh'
+        ],
+        related: ['PAN', 'REGEN', 'VIEW']
+    },
+    {
+        software: 'autocad',
+        category: 'view',
+        name: 'PAN',
+        shortcut: ['P'],
+        icon: '✋',
+        color: 'from-green-500 to-green-600',
+        description: 'Di chuyển view không thay đổi zoom',
+        usage: 'P → Kéo chuột để di chuyển → Enter',
+        tips: [
+            'Giữ chuột giữa và kéo để pan nhanh',
+            'Kết hợp với Zoom để điều hướng',
+            'Nhấn Esc để thoát'
+        ],
+        related: ['ZOOM', 'VIEW', 'REGEN']
+    },
+    {
+        software: 'autocad',
+        category: 'view',
+        name: 'REGEN',
+        shortcut: ['RE'],
+        icon: '🔄',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Tái tạo lại màn hình hiển thị',
+        usage: 'RE → Enter',
+        tips: [
+            'Dùng khi đường line bị vỡ nét',
+            'Làm mới lại hiển thị của các đối tượng',
+            'REGENALL để regen tất cả viewport'
+        ],
+        related: ['REDRAW', 'ZOOM', 'VIEWRES']
+    },
+    {
+        software: 'autocad',
+        category: 'view',
+        name: 'LAYER',
+        shortcut: ['LA'],
+        icon: '📚',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Quản lý các layer',
+        usage: 'LA → Mở Layer Properties Manager',
+         tips: [
+            'Tổ chức bản vẽ theo layers (tường, cửa, kích thước...)',
+            'Đặt tên layer có ý nghĩa để dễ quản lý',
+            'Sử dụng freeze thay vì off để tăng hiệu suất'
+        ],
+        related: ['PROPERTIES', 'MATCHPROP', 'LAYISO']
+    },
+
+    // ===== AUTOCAD - KÍCH THƯỚC =====
+    {
+        software: 'autocad',
+        category: 'dimension',
+        name: 'DIMENSION',
+        shortcut: ['DIM', 'D'],
+        icon: '📐',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Ghi kích thước tự động',
+        usage: 'DIM → Hover qua đối tượng → Click để đặt dimension',
+        tips: [
+            'AutoCAD tự động nhận diện loại dimension phù hợp',
+            'Có thể ghi nhiều dimension liên tiếp',
+            'Sử dụng Continue/Baseline để ghi dimension chuỗi'
+        ],
+        related: ['DIMLINEAR', 'DIMALIGNED', 'DIMRADIUS']
+    },
+    {
+        software: 'autocad',
+        category: 'dimension',
+        name: 'DIMLINEAR',
+        shortcut: ['DLI'],
+        icon: '↔️',
+        color: 'from-green-500 to-green-600',
+        description: 'Kích thước theo chiều ngang/dọc',
+        usage: 'DLI → Chọn 2 điểm → Kéo ra vị trí dimension',
+        tips: [
+            'Tự động snap theo hướng gần nhất (ngang/dọc)',
+            'Nhấn M để chọn Multi (ghi nhiều dimension)',
+            'Dùng kết hợp với Ortho (F8)'
+        ],
+        related: ['DIMALIGNED', 'DIMCONTINUE', 'DIMBASELINE']
+    },
+    {
+        software: 'autocad',
+        category: 'dimension',
+        name: 'DIMALIGNED',
+        shortcut: ['DAL'],
+        icon: '⤡',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Kích thước song song với đối tượng',
+        usage: 'DAL → Chọn 2 điểm → Kéo ra vị trí',
+        tips: [
+            'Dimension sẽ song song với 2 điểm đã chọn',
+            'Hữu ích cho các đường xiên, mái nghiêng',
+            'Kết hợp với OSNAP để chính xác'
+        ],
+        related: ['DIMLINEAR', 'DIMANGULAR', 'DIMROTATED']
+    },
+    {
+        software: 'autocad',
+        category: 'dimension',
+        name: 'DIMRADIUS',
+        shortcut: ['DRA'],
+        icon: '⭕',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Ghi bán kính',
+        usage: 'DRA → Click vào arc hoặc circle',
+        tips: [
+            'Tự động thêm ký hiệu R (Radius)',
+            'Kéo để điều chỉnh vị trí text',
+            'Dùng cho cung tròn và đường tròn'
+        ],
+        related: ['DIMDIAMETER', 'DIMANGULAR', 'CIRCLE']
+    },
+    {
+        software: 'autocad',
+        category: 'dimension',
+        name: 'DIMDIAMETER',
+        shortcut: ['DDI'],
+        icon: '⊕',
+        color: 'from-teal-500 to-teal-600',
+        description: 'Ghi đường kính',
+        usage: 'DDI → Click vào circle',
+        tips: [
+            'Tự động thêm ký hiệu Ø (Diameter)',
+            'Thường dùng cho lỗ, trục tròn',
+            'Có thể điều chỉnh vị trí text'
+        ],
+        related: ['DIMRADIUS', 'CIRCLE', 'DIMANGULAR']
+    },
+    {
+        software: 'autocad',
+        category: 'dimension',
+        name: 'DIMANGULAR',
+        shortcut: ['DAN'],
+        icon: '∠',
+        color: 'from-indigo-500 to-indigo-600',
+        description: 'Ghi góc',
+        usage: 'DAN → Chọn 2 đường → Click vị trí dimension',
+        tips: [
+            'Tự động tính góc giữa 2 đường',
+            'Có thể chọn cung tròn để ghi góc cung',
+            'Kết quả hiển thị theo đơn vị góc đã setting'
+        ],
+        related: ['DIMLINEAR', 'ARC', 'ROTATE']
+    },
+
+    // ===== AUTOCAD - KHÁC =====
+    {
+        software: 'autocad',
+        category: 'other',
+        name: 'BLOCK',
+        shortcut: ['B'],
+        icon: '📦',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Tạo block từ các đối tượng',
+        usage: 'B → Đặt tên → Chọn base point → Chọn objects → OK',
+        tips: [
+            'Block giúp tái sử dụng các đối tượng lặp lại',
+            'Edit 1 block sẽ update tất cả instance',
+            'Có thể tạo Dynamic Block với parameters'
+        ],
+        related: ['INSERT', 'WBLOCK', 'EXPLODE']
+    },
+    {
+        software: 'autocad',
+        category: 'other',
+        name: 'TEXT',
+        shortcut: ['T', 'DT'],
+        icon: '📝',
+        color: 'from-green-500 to-green-600',
+        description: 'Tạo text đơn dòng hoặc đa dòng',
+        usage: 'T → Click vị trí → Nhập text → Enter',
+        tips: [
+            'DT (DTEXT) cho text đơn dòng',
+            'MTEXT cho text đa dòng với nhiều format',
+            'Dùng STYLE để quản lý font chữ'
+        ],
+        related: ['MTEXT', 'STYLE', 'SCALETEXT']
+    },
+    {
+        software: 'autocad',
+        category: 'other',
+        name: 'PRINT',
+        shortcut: ['PLOT'],
+        icon: '🖨️',
+        color: 'from-purple-500 to-purple-600',
+        description: 'In bản vẽ',
+        usage: 'PLOT → Chọn printer/plotter → Thiết lập → OK',
+        tips: [
+            'Thiết lập Page Setup trước khi in',
+            'Chọn Plot Style Table (.ctb) phù hợp',
+            'Preview trước khi in để kiểm tra'
+        ],
+        related: ['PAGESETUP', 'PREVIEW', 'PUBLISH']
+    },
+
+    // ===== SOLIDWORKS - VẼ SKETCH =====
+    {
+        software: 'solidworks',
+        category: 'draw',
+        name: 'Line',
+        shortcut: ['L'],
+        icon: '📏',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Vẽ đường thẳng trong sketch',
+        usage: 'Sketch → Line → Click điểm đầu → Click điểm cuối',
+        tips: [
+            'Nhấn Tab để nhập tọa độ chính xác',
+            'Nhấn A để chuyển sang Arc mode',
+            'ESC để kết thúc lệnh'
+        ],
+        related: ['Centerline', 'Construction Line', 'Spline']
+    },
+    {
+        software: 'solidworks',
+        category: 'draw',
+        name: 'Circle',
+        shortcut: ['C'],
+        icon: '⭕',
+        color: 'from-green-500 to-green-600',
+        description: 'Vẽ hình tròn',
+        usage: 'Sketch → Circle → Click tâm → Kéo/nhập bán kính',
+        tips: [
+            'Có 3 chế độ: Center, Perimeter, 3 Point',
+            'Dùng Smart Dimension để gán kích thước',
+            'Kết hợp với constraints để định vị'
+        ],
+        related: ['Arc', 'Ellipse', 'Slot']
+    },
+    {
+        software: 'solidworks',
+        category: 'draw',
+        name: 'Rectangle',
+        shortcut: ['R'],
+        icon: '▭',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Vẽ hình chữ nhật',
+        usage: 'Sketch → Rectangle → Chọn kiểu → Vẽ',
+        tips: [
+            'Corner Rectangle: Từ góc đối diện',
+            'Center Rectangle: Từ tâm',
+            '3 Point Rectangle: Cho phép xoay góc'
+        ],
+        related: ['Polygon', 'Slot', 'Line']
+    },
+    {
+        software: 'solidworks',
+        category: 'draw',
+        name: 'Arc',
+        shortcut: ['A'],
+        icon: '⌒',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Vẽ cung tròn',
+        usage: 'Sketch → Arc → Chọn 3 điểm',
+        tips: [
+            'Tangent Arc: Tiếp tuyến với đường trước',
+            '3 Point Arc: Vẽ qua 3 điểm',
+            'Centerpoint Arc: Từ tâm, bán kính, góc'
+        ],
+        related: ['Circle', 'Spline', 'Fillet']
+    },
+    {
+        software: 'solidworks',
+        category: 'draw',
+        name: 'Spline',
+        shortcut: [],
+        icon: '〜',
+        color: 'from-teal-500 to-teal-600',
+        description: 'Vẽ đường cong spline',
+        usage: 'Sketch → Spline → Click các điểm điều khiển',
+        tips: [
+            'Dùng cho các đường cong phức tạp, organic',
+            'Có thể edit spline points sau khi tạo',
+            'Show Curvature Combs để kiểm tra độ mượt'
+        ],
+        related: ['Arc', 'Style Spline', 'Fit Spline']
+    },
+
+    // ===== SOLIDWORKS - FEATURES =====
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Extrude Boss/Base',
+        shortcut: ['Ctrl+B'],
+        icon: '⬆️',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Đùn sketch thành 3D (thêm vật liệu)',
+        usage: 'Features → Extrude Boss → Chọn sketch → Nhập chiều cao',
+        tips: [
+            'Blind: Đùn 1 chiều với khoảng cách cố định',
+            'Through All: Đùn xuyên suốt',
+            'Up To Surface/Next: Đùn đến bề mặt/feature kế',
+            'Mid Plane: Đùn 2 chiều từ mặt phẳng giữa'
+        ],
+        related: ['Extrude Cut', 'Revolve', 'Loft']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Extrude Cut',
+        shortcut: ['Ctrl+E'],
+        icon: '⬇️',
+        color: 'from-red-500 to-red-600',
+        description: 'Đùn sketch để cắt bỏ vật liệu',
+        usage: 'Features → Extrude Cut → Chọn sketch → Thiết lập',
+        tips: [
+            'Through All: Cắt xuyên suốt toàn bộ part',
+            'Up To Next: Cắt đến feature kế tiếp',
+            'Dùng để tạo lỗ, rãnh, khoét'
+        ],
+        related: ['Extrude Boss', 'Hole Wizard', 'Revolve Cut']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Revolve',
+        shortcut: [],
+        icon: '🔄',
+        color: 'from-green-500 to-green-600',
+        description: 'Quay sketch quanh trục',
+        usage: 'Features → Revolve → Chọn sketch → Chọn trục → Góc quay',
+        tips: [
+            'Phù hợp cho chi tiết tròn xoay (trục, ống, bát)',
+            'Sketch cần có centerline làm trục quay',
+            'Góc 360° tạo vật thể tròn hoàn chỉnh'
+        ],
+        related: ['Extrude', 'Sweep', 'Loft']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Sweep',
+        shortcut: [],
+        icon: '🌊',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Quét profile dọc theo path',
+        usage: 'Features → Sweep → Chọn profile → Chọn path',
+        tips: [
+            'Profile: Tiết diện cần quét',
+            'Path: Đường dẫn (có thể là spline, arc)',
+            'Dùng cho ống, dây cáp, ray'
+        ],
+        related: ['Loft', 'Revolve', 'Boundary']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Loft',
+        shortcut: [],
+        icon: '🎭',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Nối các profile với nhau',
+        usage: 'Features → Loft → Chọn các profiles theo thứ tự → OK',
+        tips: [
+            'Cần ít nhất 2 profiles trên các mặt phẳng khác nhau',
+            'Có thể thêm Guide Curves để kiểm soát hình dạng',
+            'Dùng cho surface phức tạp, organic'
+        ],
+        related: ['Sweep', 'Boundary', 'Fill']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Fillet',
+        shortcut: [],
+        icon: '╰',
+        color: 'from-teal-500 to-teal-600',
+        description: 'Bo tròn cạnh/góc',
+        usage: 'Features → Fillet → Chọn edges → Nhập bán kính',
+        tips: [
+            'Constant Size: Bán kính đồng đều',
+            'Variable Size: Bán kính thay đổi',
+            'Face Fillet: Bo giữa 2 mặt',
+            'Full Round: Bo tròn hoàn toàn giữa 3 mặt'
+        ],
+        related: ['Chamfer', 'Round', 'Blend']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Chamfer',
+        shortcut: [],
+        icon: '╲',
+        color: 'from-indigo-500 to-indigo-600',
+        description: 'Vát góc',
+        usage: 'Features → Chamfer → Chọn edges → Nhập kích thước',
+        tips: [
+            'Distance-Distance: 2 khoảng cách',
+            'Angle-Distance: Góc và khoảng cách',
+            'Vertex: Vát góc đỉnh'
+        ],
+        related: ['Fillet', 'Draft', 'Edge Break']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Hole Wizard',
+        shortcut: [],
+        icon: '🕳️',
+        color: 'from-pink-500 to-pink-600',
+        description: 'Tạo lỗ chuẩn (ren, chìm)',
+        usage: 'Features → Hole Wizard → Chọn kiểu lỗ → Đặt vị trí',
+        tips: [
+            'Counterbore: Lỗ chìm đầu bu lông',
+            'Countersink: Lỗ chìm đầu vít',
+            'Straight Tap: Lỗ ren thẳng',
+            'Tự động tạo theo tiêu chuẩn (ANSI, ISO)'
+        ],
+        related: ['Extrude Cut', 'Thread', 'Simple Hole']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Shell',
+        shortcut: [],
+        icon: '🐚',
+        color: 'from-cyan-500 to-cyan-600',
+        description: 'Tạo vỏ rỗng',
+        usage: 'Features → Shell → Chọn mặt cần bỏ → Nhập độ dày',
+        tips: [
+            'Chọn mặt để mở (không chọn = vật thể kín)',
+            'Nhập độ dày thành (âm = ra ngoài, dương = vào trong)',
+            'Dùng cho hộp, vỏ bảo vệ'
+        ],
+        related: ['Rib', 'Thin Feature', 'Draft']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Mirror',
+        shortcut: [],
+        icon: '🪞',
+        color: 'from-lime-500 to-lime-600',
+        description: 'Đối xứng feature',
+        usage: 'Features → Mirror → Chọn mặt phẳng → Chọn features',
+        tips: [
+            'Mirror toàn bộ body hoặc từng feature',
+            'Chọn mặt phẳng đối xứng (plane/face)',
+            'Tiết kiệm thời gian cho chi tiết đối xứng'
+        ],
+        related: ['Pattern', 'Symmetry', 'Copy']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Linear Pattern',
+        shortcut: [],
+        icon: '⋮⋮⋮',
+        color: 'from-amber-500 to-amber-600',
+        description: 'Nhân bản feature theo hàng/cột',
+        usage: 'Features → Linear Pattern → Chọn features → Thiết lập direction & số lượng',
+        tips: [
+            'Direction 1 & 2 cho pattern 2 chiều',
+            'Spacing: Khoảng cách giữa các instance',
+            'Geometry pattern: Nhanh hơn nhưng ít linh hoạt'
+        ],
+        related: ['Circular Pattern', 'Mirror', 'Fill Pattern']
+    },
+    {
+        software: 'solidworks',
+        category: 'feature',
+        name: 'Circular Pattern',
+        shortcut: [],
+        icon: '⚙️',
+        color: 'from-rose-500 to-rose-600',
+        description: 'Nhân bản feature theo vòng tròn',
+        usage: 'Features → Circular Pattern → Chọn trục → Chọn features → Số lượng',
+        tips: [
+            'Chọn trục quay (edge, axis, centerline)',
+            'Angle: Góc giữa các instance',
+            'Equal spacing: Phân bố đều 360°',
+            'Dùng cho bánh răng, lỗ ốc trên mặt bích'
+        ],
+        related: ['Linear Pattern', 'Curve Driven Pattern', 'Fill Pattern']
+    },
+
+    // ===== SOLIDWORKS - ASSEMBLY =====
+    {
+        software: 'solidworks',
+        category: 'assembly',
+        name: 'Mate',
+        shortcut: ['Alt+M'],
+        icon: '🔗',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Ràng buộc vị trí giữa các parts',
+        usage: 'Assembly → Mate → Chọn 2 faces/edges/points → Chọn loại mate',
+        tips: [
+            'Coincident: Trùng khớp (mặt-mặt, edge-edge)',
+            'Concentric: Đồng tâm (lỗ-trục)',
+            'Distance: Cách nhau 1 khoảng',
+            'Angle: Góc giữa 2 mặt phẳng'
+        ],
+        related: ['SmartMates', 'Flexible', 'Lock']
+    },
+    {
+        software: 'solidworks',
+        category: 'assembly',
+        name: 'Insert Component',
+        shortcut: ['Ctrl+I'],
+        icon: '📥',
+        color: 'from-green-500 to-green-600',
+        description: 'Chèn part vào assembly',
+        usage: 'Assembly → Insert Components → Chọn part → Click vị trí',
+        tips: [
+            'Drag & drop file part vào assembly cũng được',
+            'Part đầu tiên nên Fix (F) để làm gốc',
+            'Có thể insert cả sub-assembly'
+        ],
+        related: ['Mate', 'Replace Components', 'Copy']
+    },
+    {
+        software: 'solidworks',
+        category: 'assembly',
+        name: 'Exploded View',
+        shortcut: [],
+        icon: '💥',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Tạo view tách rời',
+        usage: 'Assembly → Insert → Exploded View → Kéo components',
+        tips: [
+            'Dùng để hiển thị cách lắp ráp',
+            'Có thể tạo nhiều bước explode',
+            'Animate để tạo video lắp ráp'
+        ],
+        related: ['Collapse', 'Animate', 'Configuration']
+    },
+    {
+        software: 'solidworks',
+        category: 'assembly',
+        name: 'Interference Detection',
+        shortcut: [],
+        icon: '⚠️',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Kiểm tra va chạm giữa parts',
+        usage: 'Tools → Interference Detection → Calculate',
+        tips: [
+            'Kiểm tra xem parts có đè lên nhau không',
+            'Excluded Selections: Bỏ qua các pair không cần check',
+            'Nên check trước khi hoàn thiện thiết kế'
+        ],
+        related: ['Clearance Verification', 'Collision Detection', 'Physical Dynamics']
+    },
+
+    // ===== SOLIDWORKS - KHÁC =====
+    {
+        software: 'solidworks',
+        category: 'other',
+        name: 'Smart Dimension',
+        shortcut: ['D'],
+        icon: '📐',
+        color: 'from-blue-500 to-blue-600',
+        description: 'Gán kích thước cho sketch',
+        usage: 'Sketch → Smart Dimension → Click đối tượng → Nhập giá trị',
+        tips: [
+            'Tự động nhận dạng loại dimension phù hợp',
+            'Click 1 line = length, 2 lines = distance/angle',
+            'Click circle/arc = diameter/radius'
+        ],
+        related: ['Dimension', 'Modify', 'Relations']
+    },
+    {
+        software: 'solidworks',
+        category: 'other',
+        name: 'Measure',
+        shortcut: [],
+        icon: '📏',
+        color: 'from-green-500 to-green-600',
+        description: 'Đo khoảng cách, góc, diện tích',
+        usage: 'Tools → Measure → Click các đối tượng cần đo',
+        tips: [
+            'Đo được distance, angle, radius, area',
+            'Measure giữa points, edges, faces',
+            'Kết quả hiển thị realtime khi hover'
+        ],
+        related: ['Mass Properties', 'Sensor', 'Evaluate']
+    },
+    {
+        software: 'solidworks',
+        category: 'other',
+        name: 'Mass Properties',
+        shortcut: [],
+        icon: '⚖️',
+        color: 'from-purple-500 to-purple-600',
+        description: 'Tính toán khối lượng, trọng tâm',
+        usage: 'Tools → Mass Properties',
+        tips: [
+            'Hiển thị: Mass, Volume, Surface Area',
+            'Center of mass (trọng tâm)',
+            'Moments of Inertia (mô men quán tính)',
+            'Cần assign material trước'
+        ],
+        related: ['Material', 'Sensor', 'Measure']
+    },
+    {
+        software: 'solidworks',
+        category: 'other',
+        name: 'Configurations',
+        shortcut: [],
+        icon: '⚙️',
+        color: 'from-orange-500 to-orange-600',
+        description: 'Tạo các biến thể của part/assembly',
+        usage: 'Configuration Manager → New Configuration → Modify dimensions',
+        tips: [
+            'Tạo nhiều phiên bản từ 1 file',
+            'Thay đổi dimensions, features, materials',
+            'Design Table: Quản lý configs bằng Excel'
+        ],
+        related: ['Design Table', 'Display States', 'Equations']
+    }
         const courses = [
             {id:2, title:'SolidWorks', students:432, duration:'10 tuần', level:'Trung cấp', rating:4.9, videos:45, color:'from-green-500 to-green-600', description:'Thiết kế 3D, assembly, drawing 2D và phân tích FEA', progress:20},
             {id:4, title:'AutoCAD', students:356, duration:'11 tuần', level:'Trung cấp', rating:4.6, videos:32, color:'from-orange-500 to-orange-600', description:'Vẽ kỹ thuật 2D và mô hình 3D với AutoCAD', progress:15}
@@ -473,7 +1568,7 @@
             'full': 'Gói Trọn bộ'
         };
 
-        function switchTab(tab) {
+       function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => {
                 b.classList.remove('border-blue-600','text-blue-600');
                 b.classList.add('border-transparent','text-gray-500');
@@ -483,6 +1578,7 @@
 
             document.getElementById('courses-content').style.display = tab==='courses'?'block':'none';
             document.getElementById('my-learning-content').style.display = tab==='my-learning'?'block':'none';
+            document.getElementById('commands-content').style.display = tab==='commands'?'block':'none';  // ← THÊM DÒNG NÀY
         }
 
         function getLevelClass(level) {
@@ -801,7 +1897,136 @@
 
         renderCourses();
         renderEnrolled();
+        // ===== FUNCTIONS CHO THƯ VIỆN LỆNH =====
+        function filterCommands() {
+            const search = document.getElementById('cmd-search').value.toLowerCase();
+            const software = document.getElementById('cmd-software').value;
+            const category = document.querySelector('.cmd-category-btn.active')?.dataset.category || 'all';
+            
+            const filtered = commandsData.filter(cmd => {
+                const matchSearch = cmd.name.toLowerCase().includes(search) ||
+                                  cmd.description.toLowerCase().includes(search) ||
+                                  cmd.shortcut.some(s => s.toLowerCase().includes(search)) ||
+                                  (cmd.tips && cmd.tips.some(t => t.toLowerCase().includes(search)));
+                const matchSoftware = software === 'all' || cmd.software === software;
+                const matchCategory = category === 'all' || cmd.category === category;
+                
+                return matchSearch && matchSoftware && matchCategory;
+            });
+            
+            renderCommands(filtered);
+        }
+
+        function filterByCategory(cat) {
+            document.querySelectorAll('.cmd-category-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            const activeBtn = document.querySelector(`[data-category="${cat}"]`);
+            activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+            activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
+            
+            filterCommands();
+        }
+
+        function renderCommands(commands) {
+            const grid = document.getElementById('commands-grid');
+            const noResults = document.getElementById('no-results');
+            
+            if(commands.length === 0) {
+                grid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            grid.innerHTML = commands.map(cmd => `
+                <div onclick="openCommandDetail(${commandsData.indexOf(cmd)})" 
+                     class="bg-white rounded-xl border hover:shadow-lg transition-all cursor-pointer p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${cmd.color} flex items-center justify-center text-2xl flex-shrink-0">
+                            ${cmd.icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="font-bold text-gray-900 truncate">${cmd.name}</h3>
+                                <span class="text-xs px-2 py-1 rounded-full ${cmd.software === 'autocad' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                    ${cmd.software.toUpperCase()}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2">${cmd.description}</p>
+                            <div class="flex flex-wrap gap-1">
+                                ${cmd.shortcut.slice(0, 2).map(s => `
+                                    <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded font-mono">${s}</span>
+                                `).join('')}
+                                ${cmd.shortcut.length > 2 ? `<span class="text-xs px-2 py-1 text-gray-500">+${cmd.shortcut.length - 2}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCommandDetail(index) {
+            const cmd = commandsData[index];
+            
+            document.getElementById('cmd-detail-icon').className = `w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-gradient-to-br ${cmd.color}`;
+            document.getElementById('cmd-detail-icon').textContent = cmd.icon;
+            document.getElementById('cmd-detail-name').textContent = cmd.name;
+            document.getElementById('cmd-detail-software').textContent = cmd.software.toUpperCase();
+            document.getElementById('cmd-detail-software').className = `text-sm px-3 py-1 rounded-full ${cmd.software === 'autocad' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+            document.getElementById('cmd-detail-desc').textContent = cmd.description;
+            
+            document.getElementById('cmd-detail-shortcut').innerHTML = cmd.shortcut.map(s => `
+                <span class="px-3 py-2 bg-gray-100 text-gray-800 rounded-lg font-mono font-semibold">${s}</span>
+            `).join('');
+            
+            document.getElementById('cmd-detail-usage').innerHTML = `
+                <pre class="text-sm text-gray-700 whitespace-pre-wrap font-mono">${cmd.usage}</pre>
+            `;
+            
+            if(cmd.tips && cmd.tips.length > 0) {
+                document.getElementById('cmd-detail-tips-section').classList.remove('hidden');
+                document.getElementById('cmd-detail-tips').innerHTML = cmd.tips.map(tip => `
+                    <li class="text-sm">${tip}</li>
+                `).join('');
+            } else {
+                document.getElementById('cmd-detail-tips-section').classList.add('hidden');
+            }
+            
+            if(cmd.related && cmd.related.length > 0) {
+                document.getElementById('cmd-detail-related-section').classList.remove('hidden');
+                document.getElementById('cmd-detail-related').innerHTML = cmd.related.map(rel => {
+                    const relCmd = commandsData.find(c => c.name === rel);
+                    const relIndex = relCmd ? commandsData.indexOf(relCmd) : -1;
+                    return `
+                        <button onclick="event.stopPropagation(); openCommandDetail(${relIndex})" 
+                                class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100">
+                            ${rel}
+                        </button>
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('cmd-detail-related-section').classList.add('hidden');
+            }
+            
+            document.getElementById('command-modal').classList.remove('hidden');
+            document.getElementById('command-modal').classList.add('flex');
+        }
+
+        function closeCommandModal() {
+            document.getElementById('command-modal').classList.add('hidden');
+            document.getElementById('command-modal').classList.remove('flex');
+        }
+
+        // Render initial commands khi load trang
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCommands(commandsData);
+        });
+        // ===== END THƯ VIỆN LỆNH =====
     </script>
 
 </body>
+
 </html>
