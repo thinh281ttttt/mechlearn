@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MechLearn - Nền tảng Học Cơ Khí Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-xl">
+                        <svg class="text-white" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m-9-9h6m6 0h6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">MechLearn</h1>
+                        <p class="text-sm text-gray-500">Nền tảng học Cơ Khí trực tuyến</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="openQAModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                        </svg>
+                        <span>Hỏi đáp</span>
+                    </button>
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">SV</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex space-x-8">
+                <button onclick="switchTab('courses')" class="tab-btn py-4 px-2 border-b-2 border-blue-600 text-blue-600 font-medium text-sm" data-tab="courses">Khóa học</button>
+                <button onclick="switchTab('my-learning')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 font-medium text-sm" data-tab="my-learning">Học của tôi</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <div id="courses-content">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Khám phá khóa học</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="courses-grid"></div>
+        </div>
+
+        <div id="my-learning-content" style="display:none;">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Khóa học của tôi</h2>
+            <p class="text-gray-600 mb-8">Tiếp tục học tập và hoàn thành các khóa học đã đăng ký</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="enrolled-grid"></div>
+        </div>
+    </main>
+
+    <!-- Q&A Modal -->
+    <div id="qa-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-2xl font-bold">Đặt câu hỏi</h3>
+                <button onclick="closeQAModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="flex-1 p-6 overflow-y-auto">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Câu hỏi của bạn</label>
+                        <textarea id="question-text" rows="4" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Nhập câu hỏi của bạn..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Đính kèm hình ảnh (tùy chọn)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('image-upload').click()">
+                            <input type="file" id="image-upload" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-600">Click để tải lên hình ảnh</p>
+                        </div>
+                        <div id="image-preview" class="mt-4 hidden">
+                            <img id="preview-img" class="rounded-lg max-h-64 mx-auto">
+                            <button onclick="removeImage()" class="mt-2 text-sm text-red-600 hover:text-red-700">Xóa hình ảnh</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t">
+                <button onclick="submitQuestion()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:opacity-90">Gửi câu hỏi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div id="pricing-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-2xl font-bold">Chọn gói học phù hợp</h3>
+                <button onclick="closePricingModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <h4 id="pricing-course-title" class="text-lg font-bold mb-6 text-center"></h4>
+                
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div onclick="selectPricing('basic')" class="border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition-all text-center">
+                        <h5 class="text-lg font-bold mb-2">Cơ bản</h5>
+                        <p class="text-3xl font-bold text-blue-600 mb-3">200.000<span class="text-sm text-gray-500"> VNĐ</span></p>
+                        <p class="text-sm text-gray-600 mb-4">Nội dung cốt lõi của khóa học</p>
+                        <ul class="text-left text-sm space-y-2 mb-4">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>4 bài học cơ bản</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>2 bài tập thực hành</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>Truy cập 6 tháng</span>
+                            </li>
+                        </ul>
+                        <button class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium">Chọn gói</button>
+                    </div>
+
+                    <div onclick="selectPricing('advanced')" class="border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition-all text-center">
+                        <h5 class="text-lg font-bold mb-2">Nâng cao</h5>
+                        <p class="text-3xl font-bold text-blue-600 mb-3">300.000<span class="text-sm text-gray-500"> VNĐ</span></p>
+                        <p class="text-sm text-gray-600 mb-4">Kiến thức chuyên sâu</p>
+                        <ul class="text-left text-sm space-y-2 mb-4">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>4 bài học nâng cao</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>3 bài tập nâng cao</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>Truy cập 1 năm</span>
+                            </li>
+                        </ul>
+                        <button class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium">Chọn gói</button>
+                    </div>
+
+                    <div onclick="selectPricing('full')" class="border-2 border-blue-500 bg-blue-50 rounded-xl p-6 cursor-pointer relative text-center">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                            Tiết kiệm 20%
+                        </div>
+                        <h5 class="text-lg font-bold mb-2">Trọn bộ</h5>
+                        <p class="text-3xl font-bold text-blue-600 mb-3">400.000<span class="text-sm text-gray-500"> VNĐ</span></p>
+                        <p class="text-sm text-gray-600 mb-4">Cơ bản + Nâng cao</p>
+                        <ul class="text-left text-sm space-y-2 mb-4">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>8 bài học đầy đủ</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>5 bài tập tổng hợp</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>Truy cập trọn đời</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                                <span>Hỗ trợ ưu tiên</span>
+                            </li>
+                        </ul>
+                        <button class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium">Chọn gói</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-2xl font-bold">Thanh toán</h3>
+                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <div class="mb-6">
+                    <h4 id="payment-course-title" class="text-lg font-bold mb-2"></h4>
+                    <p id="payment-package-name" class="text-sm text-gray-600 mb-3"></p>
+                    <div class="flex items-baseline space-x-2">
+                        <span class="text-3xl font-bold text-blue-600" id="payment-price"></span>
+                        <span class="text-gray-500">VNĐ</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phương thức thanh toán</label>
+                        <select class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Thẻ tín dụng/ghi nợ</option>
+                            <option>Chuyển khoản ngân hàng</option>
+                            <option>Ví điện tử (Momo, ZaloPay)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t">
+                <button onclick="processPayment()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:opacity-90">Thanh toán ngay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="text-green-600" width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h3>
+            <p class="text-gray-600 mb-6">Bạn đã đăng ký khóa học thành công. Chúc bạn học tập hiệu quả!</p>
+            <button onclick="closeSuccessModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-lg font-semibold">Bắt đầu học</button>
+        </div>
+    </div>
+
+    <!-- Course Modal -->
+    <div id="course-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="flex-1 flex overflow-hidden">
+                <div class="flex-1 p-6 overflow-y-auto">
+                    <div id="video-container" class="bg-black rounded-xl aspect-video mb-4 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="text-white text-6xl mb-4">▶</div>
+                            <p id="video-title" class="text-white text-lg">Chọn bài học để bắt đầu</p>
+                        </div>
+                    </div>
+                    <h4 id="lesson-title" class="text-xl font-bold mb-2">Chào mừng đến với khóa học</h4>
+                    <p id="lesson-desc" class="text-gray-600 mb-4">Hãy chọn một bài học bên phải để bắt đầu học.</p>
+                    <div id="lesson-content" class="hidden">
+                        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                            <h5 class="font-semibold mb-2">Mô tả bài học</h5>
+                            <p id="lesson-description" class="text-gray-700 text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-96 border-l overflow-y-auto">
+                    <div class="p-4 bg-gray-50 border-b">
+                        <h4 class="font-semibold">Nội dung khóa học</h4>
+                    </div>
+                    <div id="lessons-list" class="p-4 space-y-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const courses = [
+            {id:2, title:'SolidWorks', students:432, duration:'10 tuần', level:'Trung cấp', rating:4.9, videos:45, color:'from-green-500 to-green-600', description:'Thiết kế 3D, assembly, drawing 2D và phân tích FEA', progress:20},
+            {id:4, title:'AutoCAD', students:356, duration:'11 tuần', level:'Trung cấp', rating:4.6, videos:32, color:'from-orange-500 to-orange-600', description:'Vẽ kỹ thuật 2D và mô hình 3D với AutoCAD', progress:15}
+        ];
+
+        const lessons = {
+            2: {
+                basic: [
+                    {
+                        id:1, 
+                        title:'Bài 1: Giới thiệu SolidWorks', 
+                        duration:'14:21', 
+                        done:true, 
+                        desc:'Làm quen với giao diện SolidWorks',
+                        videoType: 'youtube',
+                        videoFile: 'https://www.youtube.com/watch?v=5Uwd3XEIAzA&list=PLHhP_1Sx2__EFXRdQXQ-Ckt9sbCMc8FSS', // Google Drive File ID
+                        fullDesc:'Trong bài học này, bạn sẽ được làm quen với giao diện của SolidWorks, các thanh công cụ chính, cách điều hướng không gian 3D và thiết lập môi trường làm việc cơ bản. Do lỗi server nên các bạn xem video tiếng việt tại đây https://youtu.be/k0bvJ2XLO3c'
+                    },
+                    {
+                        id:2, 
+                        title:'Bài 2: Vẽ Sketch 2D', 
+                        duration:'22:15', 
+                        done:true, 
+                        desc:'Line, Circle, Rectangle, Arc',
+                        videoType: 'youtube',
+                        videoFile: 'https://www.youtube.com/watch?v=IuHLl1KMXBY',
+                        fullDesc:'Học các lệnh vẽ 2D cơ bản như Line, Circle, Rectangle, Arc và cách sử dụng các ràng buộc (constraints) để tạo sketch chính xác.'
+                    },
+                    {
+                        id:3, 
+                        title:'Bài 3: Extrude và Revolve', 
+                        duration:'28:40', 
+                        done:false, 
+                        desc:'Tạo 3D từ 2D sketch',
+                        videoType: 'local',
+                        videoFile: 'solidworks-extrude.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Tìm hiểu cách chuyển đổi sketch 2D thành mô hình 3D bằng các lệnh Extrude và Revolve, bao gồm các tùy chọn nâng cao như Mid Plane và Thin Feature.'
+                    },
+                    {
+                        id:4, 
+                        title:'Bài 4: Fillet và Chamfer', 
+                        duration:'20:15', 
+                        done:false, 
+                        desc:'Bo góc và vát cạnh',
+                        videoType: 'local',
+                        videoFile: 'solidworks-fillet.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Học cách sử dụng Fillet để bo tròn góc và Chamfer để vát cạnh, giúp mô hình trở nên thực tế và dễ sản xuất hơn.'
+                    }
+                ],
+                advanced: [
+                    {
+                        id:5, 
+                        title:'Bài 5: Assembly cơ bản', 
+                        duration:'25:30', 
+                        done:false, 
+                        desc:'Lắp ráp chi tiết',
+                        videoType: 'youtube',
+                        videoFile: 'VxnPALTWaXo', // Video demo Assembly
+                        fullDesc:'Tìm hiểu cách tạo Assembly, sử dụng các ràng buộc (mates) để lắp ráp các chi tiết với nhau, và kiểm tra sự can thiệp giữa các bộ phận.'
+                    },
+                    {
+                        id:6, 
+                        title:'Bài 6: Drawing 2D nâng cao', 
+                        duration:'30:45', 
+                        done:false, 
+                        desc:'Tạo bản vẽ kỹ thuật',
+                        videoType: 'local',
+                        videoFile: 'solidworks-drawing.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Học cách tạo bản vẽ kỹ thuật 2D từ mô hình 3D, bao gồm các view chuẩn, ghi kích thước, dung sai và chú thích kỹ thuật theo tiêu chuẩn.'
+                    },
+                    {
+                        id:7, 
+                        title:'Bài 7: Sheet Metal', 
+                        duration:'24:20', 
+                        done:false, 
+                        desc:'Thiết kế tấm kim loại',
+                        videoType: 'local',
+                        videoFile: 'solidworks-sheetmetal.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Khám phá module Sheet Metal để thiết kế các chi tiết tấm kim loại, tạo các yếu tố như gấp, hàn, đột lỗ và tính toán bản vẽ triển khai.'
+                    },
+                    {
+                        id:8, 
+                        title:'Bài 8: Simulation FEA', 
+                        duration:'32:15', 
+                        done:false, 
+                        desc:'Phân tích FEA',
+                        videoType: 'local',
+                        videoFile: 'solidworks-simulation.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Sử dụng SolidWorks Simulation để phân tích ứng suất, biến dạng và hệ số an toàn của chi tiết dưới các điều kiện tải trọng khác nhau.'
+                    }
+                ],
+                exercises: [
+                    {id:101, title:'Bài tập 1: Vẽ chi tiết cơ khí đơn giản', type:'basic', desc:'Thực hành vẽ một chi tiết cơ khí đơn giản sử dụng các kỹ năng đã học'},
+                    {id:102, title:'Bài tập 2: Tạo mô hình 3D phức tạp', type:'basic', desc:'Kết hợp nhiều feature để tạo mô hình 3D hoàn chỉnh'},
+                    {id:103, title:'Bài tập 3: Assembly đơn giản', type:'advanced', desc:'Lắp ráp 3-5 chi tiết thành một cụm chi tiết hoàn chỉnh'},
+                    {id:104, title:'Bài tập 4: Bản vẽ kỹ thuật', type:'advanced', desc:'Tạo bản vẽ kỹ thuật hoàn chỉnh theo tiêu chuẩn'},
+                    {id:105, title:'Bài tập 5: Dự án tổng hợp', type:'advanced', desc:'Dự án cuối khóa tích hợp toàn bộ kiến thức'}
+                ]
+            },
+            4: {
+                basic: [
+                    {
+                        id:1, 
+                        title:'Bài 1: Giới thiệu AutoCAD', 
+                        duration:'', 
+                        done:false, 
+                        desc:'Thiết lập và giao diện',
+                        videoType: 'youtube',
+                        videoFile: 'https://youtu.be/IuHLl1KMXBY', // Video demo AutoCAD
+                        fullDesc:'Làm quen với giao diện AutoCAD, các thanh công cụ, workspace, và cách thiết lập đơn vị, giới hạn bản vẽ phù hợp với từng loại dự án. Do server đang lỗi nên bạn hãy nhập vào link này để xem video https://youtu.be/IuHLl1KMXBY'
+                    },
+                    {
+                        id:2, 
+                        title:'Bài 2: Lệnh vẽ cơ bản', 
+                        duration:'18:45', 
+                        done:false, 
+                        desc:'Line, Circle, Arc',
+                        videoType: 'youtube',
+                        videoFile: 'autocad-basic-commands.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Học các lệnh vẽ 2D cơ bản như Line, Circle, Arc, Polyline và cách sử dụng tọa độ Cartesian, Polar để vẽ chính xác.'
+                    },
+                    {
+                        id:3, 
+                        title:'Bài 3: Object Snap', 
+                        duration:'20:15', 
+                        done:false, 
+                        desc:'Vẽ chính xác với OSNAP',
+                        videoType: 'local',
+                        videoFile: 'autocad-osnap.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Sử dụng Object Snap (OSNAP) để bắt các điểm đặc biệt như Endpoint, Midpoint, Center, giúp vẽ chính xác và nhanh chóng.'
+                    },
+                    {
+                        id:4, 
+                        title:'Bài 4: Modify Commands', 
+                        duration:'25:30', 
+                        done:false, 
+                        desc:'Move, Copy, Rotate, Scale',
+                        videoType: 'local',
+                        videoFile: 'autocad-modify.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Thành thạo các lệnh chỉnh sửa như Move, Copy, Rotate, Scale, Mirror, Array để làm việc hiệu quả với các đối tượng đã vẽ.'
+                    }
+                ],
+                advanced: [
+                    {
+                        id:5, 
+                        title:'Bài 5: Layers nâng cao', 
+                        duration:'16:40', 
+                        done:false, 
+                        desc:'Quản lý layers',
+                        videoType: 'local',
+                        videoFile: 'autocad-layers.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Tạo và quản lý layers, thiết lập thuộc tính màu sắc, kiểu đường, độ dày, khóa và ẩn hiện layers để tổ chức bản vẽ chuyên nghiệp.'
+                    },
+                    {
+                        id:6, 
+                        title:'Bài 6: Dimensions và Annotation', 
+                        duration:'22:20', 
+                        done:false, 
+                        desc:'Ghi kích thước',
+                        videoType: 'local',
+                        videoFile: 'autocad-dimensions.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Học cách ghi kích thước (Linear, Angular, Radius, Diameter), tạo text, leaders và annotation để hoàn thiện bản vẽ kỹ thuật.'
+                    },
+                    {
+                        id:7, 
+                        title:'Bài 7: Blocks và Attributes', 
+                        duration:'28:15', 
+                        done:false, 
+                        desc:'Tạo và sử dụng blocks',
+                        videoType: 'local',
+                        videoFile: 'autocad-blocks.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Tạo blocks để tái sử dụng các đối tượng phổ biến, sử dụng attributes để thêm thông tin động, và quản lý thư viện blocks hiệu quả.'
+                    },
+                    {
+                        id:8, 
+                        title:'Bài 8: 3D Modeling', 
+                        duration:'30:45', 
+                        done:false, 
+                        desc:'Tạo mô hình 3D',
+                        videoType: 'local',
+                        videoFile: 'autocad-3d.mp4', // ← Thay bằng video của bạn
+                        fullDesc:'Khám phá không gian 3D trong AutoCAD, sử dụng Extrude, Revolve, Sweep, Loft để tạo solid 3D và render bản vẽ 3D.'
+                    }
+                ],
+                exercises: [
+                    {id:201, title:'Bài tập 1: Vẽ mặt bằng cơ bản', type:'basic', desc:'Vẽ mặt bằng đơn giản sử dụng các lệnh cơ bản'},
+                    {id:202, title:'Bài tập 2: Chi tiết cơ khí 2D', type:'basic', desc:'Vẽ chi tiết cơ khí với đầy đủ kích thước'},
+                    {id:203, title:'Bài tập 3: Sử dụng Blocks', type:'advanced', desc:'Tạo và sử dụng blocks trong bản vẽ kiến trúc'},
+                    {id:204, title:'Bài tập 4: Bản vẽ lắp ráp', type:'advanced', desc:'Tạo bản vẽ lắp ráp hoàn chỉnh với annotation'},
+                    {id:205, title:'Bài tập 5: Dự án 3D', type:'advanced', desc:'Dự án cuối khóa: Tạo mô hình 3D và render'}
+                ]
+            }
+        };
+
+        let enrolled = [];
+        let enrolledPackages = {};
+        let currentCourse = null;
+        let pendingEnrollment = null;
+        let selectedPackage = null;
+        let uploadedImage = null;
+
+        const packagePrices = {
+            'basic': 200000,
+            'advanced': 300000,
+            'full': 400000
+        };
+
+        const packageNames = {
+            'basic': 'Gói Cơ bản',
+            'advanced': 'Gói Nâng cao',
+            'full': 'Gói Trọn bộ'
+        };
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('border-blue-600','text-blue-600');
+                b.classList.add('border-transparent','text-gray-500');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('border-blue-600','text-blue-600');
+            document.querySelector(`[data-tab="${tab}"]`).classList.remove('border-transparent','text-gray-500');
+
+            document.getElementById('courses-content').style.display = tab==='courses'?'block':'none';
+            document.getElementById('my-learning-content').style.display = tab==='my-learning'?'block':'none';
+        }
+
+        function getLevelClass(level) {
+            if(level==='Cơ bản') return 'bg-green-100 text-green-700';
+            if(level==='Trung cấp') return 'bg-blue-100 text-blue-700';
+            return 'bg-purple-100 text-purple-700';
+        }
+
+        function formatPrice(price) {
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function renderCourses() {
+            document.getElementById('courses-grid').innerHTML = courses.map(c => `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border hover:shadow-xl transition-all">
+                    <div class="bg-gradient-to-br ${c.color} h-40 flex items-center justify-center">
+                        <svg class="text-white opacity-50" width="60" height="60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m-9-9h6m6 0h6"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between mb-3">
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full ${getLevelClass(c.level)}">${c.level}</span>
+                            <div class="flex items-center space-x-1">
+                                <span class="text-yellow-400">★</span>
+                                <span class="text-sm font-semibold">${c.rating}</span>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">${c.title}</h3>
+                        <p class="text-sm text-gray-600 mb-4">${c.description}</p>
+                        <div class="flex text-sm text-gray-500 space-x-4 mb-4">
+                            <span>${c.students} học viên</span>
+                            <span>${c.videos} video</span>
+                            <span>${c.duration}</span>
+                        </div>
+                        <button onclick="openPricingModal(${c.id})" class="w-full py-3 rounded-xl font-semibold ${enrolled.includes(c.id)?'bg-gray-100 text-gray-600':'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'}">
+                            ${enrolled.includes(c.id)?'Đã đăng ký':'Xem bảng giá'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderEnrolled() {
+            const e = courses.filter(c => enrolled.includes(c.id));
+            document.getElementById('enrolled-grid').innerHTML = e.map(c => `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border">
+                    <div class="flex">
+                        <div class="bg-gradient-to-br ${c.color} w-48 flex items-center justify-center">
+                            <svg class="text-white opacity-50" width="50" height="50" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 1v6m0 6v6m-9-9h6m6 0h6"></path>
+                            </svg>
+                        </div>
+                        <div class="p-6 flex-1">
+                            <h3 class="text-xl font-bold mb-2">${c.title}</h3>
+                            <p class="text-sm text-gray-600 mb-4">${packageNames[enrolledPackages[c.id]]}</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm mb-2">
+                                    <span class="text-gray-600">Tiến độ</span>
+                                    <span class="font-semibold text-blue-600">${c.progress}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full" style="width:${c.progress}%"></div>
+                                </div>
+                            </div>
+                            <button onclick="openCourse(${c.id})" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-lg font-medium">▶ Tiếp tục học</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openPricingModal(id) {
+            if(enrolled.includes(id)) return;
+            pendingEnrollment = id;
+            const course = courses.find(c => c.id === id);
+            document.getElementById('pricing-course-title').textContent = course.title;
+            document.getElementById('pricing-modal').classList.remove('hidden');
+            document.getElementById('pricing-modal').classList.add('flex');
+        }
+
+        function closePricingModal() {
+            document.getElementById('pricing-modal').classList.add('hidden');
+            document.getElementById('pricing-modal').classList.remove('flex');
+        }
+
+        function selectPricing(packageType) {
+            selectedPackage = packageType;
+            closePricingModal();
+            openPaymentModal();
+        }
+
+        function openPaymentModal() {
+            const course = courses.find(c => c.id === pendingEnrollment);
+            document.getElementById('payment-course-title').textContent = course.title;
+            document.getElementById('payment-package-name').textContent = packageNames[selectedPackage];
+            document.getElementById('payment-price').textContent = formatPrice(packagePrices[selectedPackage]);
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-modal').classList.add('flex');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            document.getElementById('payment-modal').classList.remove('flex');
+        }
+
+        function processPayment() {
+            if(pendingEnrollment && selectedPackage) {
+                enrolled.push(pendingEnrollment);
+                enrolledPackages[pendingEnrollment] = selectedPackage;
+            }
+            closePaymentModal();
+            setTimeout(() => {
+                document.getElementById('success-modal').classList.remove('hidden');
+                document.getElementById('success-modal').classList.add('flex');
+            }, 300);
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+            document.getElementById('success-modal').classList.remove('flex');
+            pendingEnrollment = null;
+            selectedPackage = null;
+            renderCourses();
+            renderEnrolled();
+            switchTab('my-learning');
+        }
+
+        function openQAModal() {
+            document.getElementById('qa-modal').classList.remove('hidden');
+            document.getElementById('qa-modal').classList.add('flex');
+        }
+
+        function closeQAModal() {
+            document.getElementById('qa-modal').classList.add('hidden');
+            document.getElementById('qa-modal').classList.remove('flex');
+            document.getElementById('question-text').value = '';
+            removeImage();
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage = e.target.result;
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('image-preview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage() {
+            uploadedImage = null;
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-upload').value = '';
+        }
+
+        function submitQuestion() {
+            const question = document.getElementById('question-text').value;
+            if(!question.trim()) {
+                alert('Vui lòng nhập câu hỏi!');
+                return;
+            }
+            alert('Câu hỏi của bạn đã được gửi! Chúng tôi sẽ trả lời sớm nhất.');
+            closeQAModal();
+        }
+
+        function openCourse(id) {
+            currentCourse = courses.find(c => c.id === id);
+            document.getElementById('modal-title').textContent = currentCourse.title;
+            document.getElementById('course-modal').classList.remove('hidden');
+            document.getElementById('course-modal').classList.add('flex');
+            renderLessons(id);
+        }
+
+        function renderLessons(id) {
+            const pkg = enrolledPackages[id];
+            const courseLessons = lessons[id];
+            let html = '';
+
+            if(pkg === 'basic' || pkg === 'full') {
+                html += '<div class="mb-4"><div class="bg-green-50 p-3 rounded-lg mb-2"><h5 class="font-bold text-green-700">📚 Bài học cơ bản</h5></div>';
+                html += courseLessons.basic.map(lesson => createLessonHTML(lesson, id)).join('');
+                html += '</div>';
+            }
+
+            if(pkg === 'advanced' || pkg === 'full') {
+                html += '<div class="mb-4"><div class="bg-purple-50 p-3 rounded-lg mb-2"><h5 class="font-bold text-purple-700">🚀 Bài học nâng cao</h5></div>';
+                html += courseLessons.advanced.map(lesson => createLessonHTML(lesson, id)).join('');
+                html += '</div>';
+            }
+
+            html += '<div><div class="bg-blue-50 p-3 rounded-lg mb-2"><h5 class="font-bold text-blue-700">✍️ Bài tập</h5></div>';
+            const exercises = courseLessons.exercises.filter(ex => {
+                if(pkg === 'full') return true;
+                return ex.type === pkg;
+            });
+            html += exercises.map(ex => createExerciseHTML(ex, id)).join('');
+            html += '</div>';
+
+            document.getElementById('lessons-list').innerHTML = html;
+        }
+
+        function createLessonHTML(lesson, courseId) {
+            return `
+                <div onclick="playLesson(${lesson.id}, ${courseId})" class="p-3 rounded-lg border hover:bg-gray-50 cursor-pointer mb-2">
+                    <div class="flex items-center space-x-3">
+                        ${lesson.done ? 
+                            '<svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>' :
+                            '<div class="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0"></div>'
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">${lesson.title}</p>
+                            <p class="text-xs text-gray-500">${lesson.duration}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createExerciseHTML(exercise, courseId) {
+            return `
+                <div onclick="playExercise(${exercise.id}, ${courseId})" class="p-3 rounded-lg border border-blue-200 hover:bg-blue-50 cursor-pointer mb-2">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">${exercise.title}</p>
+                            <p class="text-xs text-gray-500">${exercise.desc}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function playLesson(lessonId, courseId) {
+            const courseLessons = lessons[courseId];
+            let lesson = courseLessons.basic.find(l => l.id === lessonId);
+            if(!lesson) lesson = courseLessons.advanced.find(l => l.id === lessonId);
+            
+            if(lesson) {
+                const videoContainer = document.getElementById('video-container');
+                
+                // Kiểm tra loại video
+                if(lesson.videoType === 'youtube') {
+                    // Nhúng YouTube
+                    videoContainer.innerHTML = `
+                        <iframe 
+                            class="w-full h-full rounded-xl"
+                            src="https://www.youtube.com/embed/${lesson.videoFile}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    `;
+                } else if(lesson.videoType === 'gdrive') {
+                    // Video từ Google Drive
+                    videoContainer.innerHTML = `
+                        <iframe 
+                            class="w-full h-full rounded-xl"
+                            src="https://drive.google.com/file/d/${lesson.videoFile}/preview"
+                            frameborder="0"
+                            allow="autoplay"
+                            allowfullscreen>
+                        </iframe>
+                    `;
+                } else {
+                    // Video local
+                    videoContainer.innerHTML = `
+                        <video controls class="w-full h-full rounded-xl" autoplay>
+                            <source src="videos/${lesson.videoFile}" type="video/mp4">
+                            Trình duyệt của bạn không hỗ trợ video.
+                        </video>
+                    `;
+                }
+                
+                document.getElementById('lesson-title').textContent = lesson.title;
+                document.getElementById('lesson-desc').textContent = lesson.desc;
+                document.getElementById('lesson-description').textContent = lesson.fullDesc;
+                document.getElementById('lesson-content').classList.remove('hidden');
+            }
+        }
+
+        function playExercise(exerciseId, courseId) {
+            const exercise = lessons[courseId].exercises.find(ex => ex.id === exerciseId);
+            if(exercise) {
+                const videoContainer = document.getElementById('video-container');
+                videoContainer.innerHTML = `
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 w-full h-full rounded-xl flex items-center justify-center">
+                        <div class="text-center text-white p-8">
+                            <svg class="mx-auto mb-4" width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <h3 class="text-2xl font-bold mb-2">Bài tập thực hành</h3>
+                            <p class="opacity-90">Làm bài tập và nộp file để được đánh giá</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('lesson-title').textContent = exercise.title;
+                document.getElementById('lesson-desc').textContent = exercise.desc;
+                document.getElementById('lesson-description').textContent = 'Đây là bài tập thực hành để củng cố kiến thức đã học. Hãy hoàn thành bài tập và nộp file để được đánh giá.';
+                document.getElementById('lesson-content').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('course-modal').classList.add('hidden');
+            document.getElementById('course-modal').classList.remove('flex');
+        }
+
+        renderCourses();
+        renderEnrolled();
+    </script>
+
+</body>
+</html>
